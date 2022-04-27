@@ -5,60 +5,80 @@ abstract type AbstractV20Filename <: AbstractGBDFilename end
 
 """
 """
-struct BaseGBDFilename <: AbstractGBDFilename
+struct BaseGBDFilename{T <: AbstractString} <: AbstractGBDFilename
 
-    dir::T where {T <: AbstractString}
-    date::T where {T <: AbstractString}
-    suffix::T where {T <: AbstractString}
+    dir::T
+    date::T
+    suffix::T
 
-    BaseGBDFilename(dir, date, suffix) = new(dir, date, suffix)
-
-end
-
-
-"""
-"""
-struct VariableGBDFilename <: AbstractVariableGBDFilename
-
-    dir::T where {T <: AbstractString}
-    date::T where {T <: AbstractString}
-    var::T where {T <: AbstractString}
-    suffix::T where {T <: AbstractString}
-
-    VariableGBDFilename(dir, date, var, suffix) = new(dir, date, var, suffix)
+    function BaseGBDFilename(dir::T, date::T, suffix::T) where {T}
+        new{T}(dir, date, suffix)
+    end
 
 end
 
 
 """
 """
-struct BaseV20Filename <: AbstractV20Filename
+struct VariableGBDFilename{T <: AbstractString} <: AbstractVariableGBDFilename
 
-    dir::T where {T <: AbstractString}
-    date::T where {T <: AbstractString}
-    subdir::T where {T <: AbstractString}
-    prefix::T where {T <: AbstractString}
-    suffix::T where {T <: AbstractString}
+    dir::T
+    date::T
+    var::T
+    suffix::T
 
-    BaseV20Filename(dir, date, subdir, prefix, suffix) =
-        new(dir, date, subdir, prefix, suffix)
+    function VariableGBDFilename(dir::T, date::T, var::T, suffix::T) where {T}
+        new{T}(dir, date, var, suffix)
+    end
 
 end
 
 
 """
 """
-struct V20Filename <: AbstractV20Filename
+struct BaseV20Filename{T <: AbstractString} <: AbstractV20Filename
 
-    dir::T where {T <: AbstractString}
-    date::T where {T <: AbstractString}
-    subdir::T where {T <: AbstractString}
-    prefix::T where {T <: AbstractString}
-    suffix::T where {T <: AbstractString}
-    year::T where {T <: AbstractString}
-    month::T where {T <: AbstractString}
+    dir::T
+    date::T
+    subdir::T
+    prefix::T
+    suffix::T
 
-    V20Filename(dir, date, subdir, prefix, suffix, year, month) =
-        new(dir, date, subdir, prefix, suffix, year, month)
+    function BaseV20Filename(
+                dir::T,
+                date::T,
+                subdir::T,
+                prefix::T,
+                suffix::T
+            ) where {T}
+        new{T}(dir, date, subdir, prefix, suffix)
+    end
+
+end
+
+
+"""
+"""
+struct V20Filename{T <: AbstractString} <: AbstractV20Filename
+
+    dir::T
+    date::T
+    subdir::T
+    prefix::T
+    suffix::T
+    year::T
+    month::T
+
+    function V20Filename(
+                dir::T,
+                date::T,
+                subdir::T,
+                prefix::T,
+                suffix::T,
+                year::T,
+                month::T
+            ) where {T}
+        new{T}(dir, date, subdir, prefix, suffix, year, month)
+    end
 
 end
