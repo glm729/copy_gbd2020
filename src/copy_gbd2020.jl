@@ -44,14 +44,33 @@ end
 
 """
 """
+function get_data_v20_base_sub(data::Dict{String, String})::BaseV20Filename
+
+    local cs_data::Vector{String} =
+        map(
+            x -> get(data, string(x), missing),
+            collect(fieldnames(BaseV20Filename)))
+
+    return BaseV20Filename(cs_data...)
+
+end
+
+
+"""
+"""
 function get_data_v20_base(
         spec_data::Dict{String, Dict{String, String}}
     )::Dict{String, BaseV20Filename}
 
-    #
+    local target_data::Vector{Dict{String, String}} =
+        map(x -> get(spec_data, x, missing), ["from", "to"])
+
+    return Dict(
+        "from" => get_data_v20_base_sub(target_data[1]),
+        "to" => get_data_v20_base_sub(target_data[2]),
+    )
 
 end
-
 
 """
 """
@@ -62,7 +81,7 @@ function read_spec(
     local intervention_keys::Vector{String}
     local v20_key::String
 
-    local output::Dict{String, Dict{String, BaseGBDFilename}}
+    local output::Dict{String, Dict{String, AbstractGBDFilename}}
     local spec::Dict{String, Dict{String, Dict{String, String}}}
     local v20_data::Dict{String, Dict{String, String}}
 
@@ -93,7 +112,7 @@ function read_spec(
         error("Required key missing: $v20_key")
     end
 
-    setindex!(output, get_data_v20_spec(v20_data), v20_key)
+    setindex!(output, get_data_v20_base(v20_data), v20_key)
 
     return output
 
