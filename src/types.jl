@@ -129,7 +129,7 @@ Joins `var` and `suffix` without a separator, and joins the complete path
 separated by a single solidus.
 """
 function Base.string(x::VariableGBDFilename)::String
-    join([x.dir, x.date, "$(x.var)$(x.suffix)"], "/")
+    join([x.dir, x.date, string(x.var, x.suffix)], "/")
 end
 
 
