@@ -78,6 +78,7 @@ struct V20Filename{T <: AbstractString} <: AbstractV20Filename
     subdir::T
     prefix::T
     suffix::T
+    index::T
     year::T
     month::T
 
@@ -87,19 +88,26 @@ struct V20Filename{T <: AbstractString} <: AbstractV20Filename
                 subdir::T,
                 prefix::T,
                 suffix::T,
+                index::T,
                 year::T,
                 month::T
             ) where {T}
-        new{T}(dir, date, subdir, prefix, suffix, year, month)
+        new{T}(dir, date, subdir, prefix, suffix, index, year, month)
     end
 
-    function V20Filename(base::BaseV20Filename, year::T, month::T) where {T}
+    function V20Filename(
+                base::BaseV20Filename,
+                index::T,
+                year::T,
+                month::T
+            ) where {T}
         new{T}(
             base.dir,
             base.date,
             base.subdir,
             base.prefix,
             base.suffix,
+            index,
             year,
             month)
     end
