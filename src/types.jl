@@ -133,7 +133,25 @@ function Base.string(x::VariableGBDFilename)::String
 end
 
 
-# """
-# """
-# function Base.string(x::V20Filename)
-# end
+"""
+    Base.string(x::V20Filename)::String
+
+Method overload for `Base.string`, to build a string from a `V20Filename`
+object.
+
+Joins `prefix`, `index`, `year`, `month`, and `suffix` with a single full stop,
+making the indexed basename.  Joins `subdir` and `index` without a separator,
+making the indexed subdirectory.  Joins `dir` and `date` to the joined indexed
+subdirectory and indexed basename components, all with a solidus.
+"""
+function Base.string(x::V20Filename)::String
+
+    local latter::String
+    local subdir_index::String
+
+    latter = join([x.prefix, x.index, x.year, x.month, x.suffix], ".")
+    subdir_index = string(x.subdir, x.index)
+
+    join([x.dir, x.date, subdir_index, latter], "/")
+
+end
