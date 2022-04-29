@@ -149,7 +149,7 @@ function Base.string(x::V20Filename)::String
     local latter::String
     local subdir_index::String
 
-    latter = join([x.prefix, x.index, x.year, x.month, x.suffix], ".")
+    latter = string(join([x.prefix, x.index, x.year, x.month], "."), x.suffix)
     subdir_index = string(x.subdir, x.index)
 
     join([x.dir, x.date, subdir_index, latter], "/")
