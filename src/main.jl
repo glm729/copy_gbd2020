@@ -113,6 +113,27 @@ end
 
 
 """
+    make_v20_new(
+        template::BaseV20Filename,
+        incoming::V20Filename
+    )::V20Filename
+
+Fill in the template gaps to make a new `V20Filename`, given a template and an
+incoming set of `V20Filename` data.
+"""
+function make_v20_new(
+            template::BaseV20Filename,
+            incoming::V20Filename
+        )::V20Filename
+
+    V20Filename(
+        template,
+        [incoming.index, incoming.year, incoming.month]...)
+
+end
+
+
+"""
     reduce_file_list_v20(
         acc::Vector{Dict{Symbol, String}},
         crt::String,
@@ -163,9 +184,10 @@ function main()
 
     v20_old = find_v20(spec["v20"]["from"])
 
-    for v in v20_old
-        println(string(v))
-    end
+    v20_new = make_v20_new(spec["v20"]["to"], v20_old[1])
+
+    println(string(v20_old[1]))
+    println(string(v20_new))
 
 end
 
