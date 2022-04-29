@@ -37,10 +37,11 @@ end
 
 
 """
+    find_v20(template::BaseV20Filename)::Vector{V20Filename}
+
+Find all V20 filenames matching the given `BaseV20Filename` template.
 """
-function find_v20(
-            template::BaseV20Filename
-        )::Vector{V20Filename}
+function find_v20(template::BaseV20Filename)::Vector{V20Filename}
 
     local prefix::String
     local directory::String
@@ -63,16 +64,27 @@ function find_v20(
         x -> replace(x, template.subdir => ""),
         readdir(directory; join=false))
 
-    return vcat(map(x -> find_files_v20(template, x, v20_rex), indices)...)
+    return vcat(map(x -> find_files_v20(x, template, v20_rex), indices)...)
 
 end
 
 
 """
+    find_files_v20(
+        index::String,
+        template::BaseV20Filename,
+        pattern::Regex
+    )::Vector{V20Filename}
+
+Find a set of V20 filenames for the given template, index, and filename
+pattern.
+
+The filename pattern is passed in to avoid constructing the regular expression
+multiple times.
 """
 function find_files_v20(
-            template::BaseV20Filename,
             index::String,
+            template::BaseV20Filename,
             pattern::Regex
         )::Vector{V20Filename}
 
@@ -101,6 +113,13 @@ end
 
 
 """
+    reduce_file_list_v20(
+        acc::Vector{Dict{Symbol, String}},
+        crt::String,
+        pattern::Regex
+    )::Vector{Dict{Symbol, String}}
+
+Reduce the list of files to get month and year data for each relevant filename.
 """
 function reduce_file_list_v20(
             acc::Vector{Dict{Symbol, String}},
