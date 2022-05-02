@@ -54,6 +54,18 @@ end
 
 """
 """
+function make_intervention_new(
+            template::BaseGBDFilename,
+            incoming::VariableGBDFilename
+        )::VariableGBDFilename
+
+    VariableGBDFilename(template, incoming.var)
+
+end
+
+
+"""
+"""
 function reduce_file_list_intervention(
             acc::Vector{String},
             crt::String,
