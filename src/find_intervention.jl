@@ -38,7 +38,7 @@ function find_intervention_years(template::BaseGBDFilename)::Vector{String}
         regex_escape(dirname(path_fragment)),  # Get inner directory
         "/",
         regex_escape(basename(path_fragment)),  # Get inner prefix
-        "(?P<year>\\d{4})",
+        "(?P<var>\\d{4})",
         regex_escape(template.suffix),
         "\$"))
 
@@ -78,7 +78,7 @@ function reduce_file_list_intervention(
     m = match(pattern, crt)
 
     if !(isnothing(m))
-        push!(acc, getindex(m, "year"))
+        push!(acc, getindex(m, "var"))
     end
 
     return acc
