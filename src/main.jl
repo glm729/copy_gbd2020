@@ -23,7 +23,64 @@ include("types.jl")
 # -----------------------------------------------------------------------------
 
 
+"""
+"""
+function prepare_copy_list(spec)::Vector{Dict{Symbol, String}}
 
+    local copy_list_interventions::Vector{Dict{Symbol, String}}
+    local copy_list_v20::Vector{Dict{Symbol, String}}
+    local iv_keys::Vector{String}
+    local output::Vector{Dict{Symbol, String}}
+
+    iv_keys = [
+        "am",
+        "irs",
+        "itn",
+    ]
+
+    copy_list_interventions = vcat(map(
+        x -> prepare_copy_list_intervention(get(spec, x, missing)),
+        iv_keys)...)
+
+    copy_list_v20 = prepare_copy_list_v20(get(spec, "v20", missing))
+
+    return vcat(copy_list_interventions, copy_list_v20)
+
+end
+
+
+"""
+"""
+function prepare_copy_list_intervention(spec_iv)::Vector{Dict{Symbol, String}}
+
+    local data_new::Vector{VariableGBDFilename}
+    local data_old::Vector{VariableGBDFilename}
+
+    data_old = find_intervention(spec_iv["from"])
+    data_new = map(x -> make_intervention_new(spec_iv["to"], x), data_old)
+
+    return map(
+        x -> Dict(:from => string(x[1]), :to => string(x[2])),
+        zip(data_old, data_new))
+
+end
+
+
+"""
+"""
+function prepare_copy_list_v20(spec_v20)::Vector{Dict{Symbol, String}}
+
+    local data_new::Vector{V20Filename}
+    local data_old::Vector{V20Filename}
+
+    data_old = find_v20(spec_v20["from"])
+    data_new = map(x -> make_v20_new(spec_v20["to"], x), data_old)
+
+    return map(
+        x -> Dict(:from => string(x[1]), :to => string(x[2])),
+        zip(data_old, data_new))
+
+end
 
 
 # Main function
@@ -34,21 +91,16 @@ include("types.jl")
 """
 function main()
 
+    local copy_list::Vector{Dict{Symbol, String}}
     local spec::Dict{String, Dict{String, AbstractGBDFilename}}
 
     spec = read_spec(ARGS[1])
 
-    println("\033[36mV20\033[m")
-    v20_old = find_v20(spec["v20"]["from"])
-    v20_new = make_v20_new(spec["v20"]["to"], v20_old[1])
-    println(string(v20_old[1]))
-    println(string(v20_new))
+    copy_list = prepare_copy_list(spec)
 
-    println("\033[36mITN\033[m")
-    itn_old = find_intervention(spec["itn"]["from"])
-    itn_new = make_intervention_new(spec["itn"]["to"], itn_old[2])
-    println(string(itn_old[2]))
-    println(string(itn_new))
+    open("TESTING.json", "w") do io
+        JSON.print(io, copy_list, 4)
+    end
 
 end
 
