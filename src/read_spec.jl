@@ -13,64 +13,31 @@ include("types.jl")
 
 """
 """
-function get_data_iv_base_sub(data::Dict{String, String})::BaseGBDFilename
+function get_spec_data_base_sub(data::Dict{String, String}, T::Type)
 
     local cs_data::Vector{String} =
-        map(
-            x -> get(data, string(x), missing),
-            collect(fieldnames(BaseGBDFilename)))
+        map(x -> get(data, string(x), missing), collect(fieldnames(T)))
 
-    return BaseGBDFilename(cs_data...)
+    return T(cs_data...)
 
 end
 
 
 """
 """
-function get_data_iv_base(
-        spec_data::Dict{String, Dict{String, String}}
-    )::Dict{String, BaseGBDFilename}
+function get_spec_data_base(data::Dict{String, Dict{String, String}}, T::Type)
+
+    local target_keys::Vector{String} = ["from", "to"]
 
     local target_data::Vector{Dict{String, String}} =
-        map(x -> get(spec_data, x, missing), ["from", "to"])
+        map(x -> get(data, x, missing), target_keys)
 
-    return Dict(
-        "from" => get_data_iv_base_sub(target_data[1]),
-        "to" => get_data_iv_base_sub(target_data[2]),
-    )
-
-end
-
-
-"""
-"""
-function get_data_v20_base_sub(data::Dict{String, String})::BaseV20Filename
-
-    local cs_data::Vector{String} =
-        map(
-            x -> get(data, string(x), missing),
-            collect(fieldnames(BaseV20Filename)))
-
-    return BaseV20Filename(cs_data...)
+    return Dict(zip(
+        target_keys,
+        map(x -> get_spec_data_base_sub(x, T), target_data)))
 
 end
 
-
-"""
-"""
-function get_data_v20_base(
-        spec_data::Dict{String, Dict{String, String}}
-    )::Dict{String, BaseV20Filename}
-
-    local target_data::Vector{Dict{String, String}} =
-        map(x -> get(spec_data, x, missing), ["from", "to"])
-
-    return Dict(
-        "from" => get_data_v20_base_sub(target_data[1]),
-        "to" => get_data_v20_base_sub(target_data[2]),
-    )
-
-end
 
 """
 """
@@ -104,7 +71,7 @@ function read_spec(
         if ismissing(data)
             error("Required key missing: $key")
         end
-        setindex!(output, get_data_iv_base(data), key)
+        setindex!(output, get_spec_data_base(data, BaseGBDFilename), key)
     end
 
     v20_data = get(spec, v20_key, missing)
@@ -112,7 +79,7 @@ function read_spec(
         error("Required key missing: $v20_key")
     end
 
-    setindex!(output, get_data_v20_base(v20_data), v20_key)
+    setindex!(output, get_spec_data_base(v20_data, BaseV20Filename), v20_key)
 
     return output
 
