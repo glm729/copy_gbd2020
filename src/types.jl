@@ -177,7 +177,7 @@ function Base.string(x::V20Filename)::String
     basename = string(
         filter(
             x -> !isempty(x),
-            [x.prefix, basename_fragment, x.suffix]))
+            [x.prefix, basename_fragment, x.suffix])...)
 
     dirname = join(
         filter(
