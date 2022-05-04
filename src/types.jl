@@ -144,8 +144,9 @@ function Base.string(x::VariableGBDFilename)::String
     local basename::String
     local dirname::String
 
-    basename = string(filter(isempty, [x.prefix, x.var, x.suffix])...)
-    dirname = join(filter(isempty, [x.dir, x.date]), "/")
+    basename = string(filter(x -> !isempty(x), [x.prefix, x.var, x.suffix])...)
+
+    dirname = join(filter(x -> !isempty(x), [x.dir, x.date]), "/")
 
     return join([dirname, basename], "/")
 
@@ -172,9 +173,17 @@ function Base.string(x::V20Filename)::String
     local dirname::String
 
     basename_fragment = join([x.index, x.year, x.month], ".")
-    basename = string(filter(isempty, [x.prefix, basename_fragment, x.suffix]))
-    dirname =
-        join(filter(isempty, [x.dir, x.date, string(x.subdir, x.index)]), "/")
+
+    basename = string(
+        filter(
+            x -> !isempty(x),
+            [x.prefix, basename_fragment, x.suffix]))
+
+    dirname = join(
+        filter(
+            x -> !isempty(x),
+            [x.dir, x.date, string(x.subdir, x.index)]),
+        "/")
 
     return join([dirname, basename], "/")
 
