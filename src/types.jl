@@ -135,9 +135,21 @@ Method overload for `Base.string`, to build a string from a
 
 Joins `var` and `suffix` without a separator, and joins the complete path
 separated by a single solidus.
+
+Modified to filter out certain possibly empty components, such as dates or
+prefixes.
 """
 function Base.string(x::VariableGBDFilename)::String
-    join([x.dir, x.date, string(x.prefix, x.var, x.suffix)], "/")
+
+    local basename::String
+    local dirname::String
+
+    basename = string(filter(x -> !isempty(x), [x.prefix, x.var, x.suffix])...)
+
+    dirname = join(filter(x -> !isempty(x), [x.dir, x.date]), "/")
+
+    return join([dirname, basename], "/")
+
 end
 
 
@@ -151,15 +163,28 @@ Joins `prefix`, `index`, `year`, `month`, and `suffix` with a single full stop,
 making the indexed basename.  Joins `subdir` and `index` without a separator,
 making the indexed subdirectory.  Joins `dir` and `date` to the joined indexed
 subdirectory and indexed basename components, all with a solidus.
+
+Modified to filter out certain possibly empty components, such as dates.
 """
 function Base.string(x::V20Filename)::String
 
-    local latter::String
-    local subdir_index::String
+    local basename::String
+    local basename_fragment::String
+    local dirname::String
 
-    latter = string(x.prefix, join([x.index, x.year, x.month], "."), x.suffix)
-    subdir_index = string(x.subdir, x.index)
+    basename_fragment = join([x.index, x.year, x.month], ".")
 
-    join([x.dir, x.date, subdir_index, latter], "/")
+    basename = string(
+        filter(
+            x -> !isempty(x),
+            [x.prefix, basename_fragment, x.suffix])...)
+
+    dirname = join(
+        filter(
+            x -> !isempty(x),
+            [x.dir, x.date, string(x.subdir, x.index)]),
+        "/")
+
+    return join([dirname, basename], "/")
 
 end

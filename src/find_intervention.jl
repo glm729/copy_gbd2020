@@ -31,7 +31,9 @@ function find_intervention_years(template::BaseGBDFilename)::Vector{String}
     local pattern::Regex
     local years::Vector{String}
 
-    path_fragment = string(template.dir, "/", template.date)
+    # Filter out empty dates before joining
+    path_fragment =
+        join(filter(x -> !isempty(x), [template.dir, template.date]), "/")
 
     pattern = Regex(string(
         "^",

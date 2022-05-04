@@ -1,17 +1,11 @@
 #!/usr/bin/env julia
 
 
-# Module imports
-# -----------------------------------------------------------------------------
-
-
-using JSON
-
-
 # Source inclusions
 # -----------------------------------------------------------------------------
 
 
+include("copy_file.jl")
 include("find_intervention.jl")
 include("find_v20.jl")
 include("read_spec.jl")
@@ -24,34 +18,79 @@ include("types.jl")
 
 
 """
+    get_directories(
+        copy_list::Vector{Dict{Symbol, String}}
+    )::Vector{String}
+
+Get all directories for files to copy, to create all required directories prior
+to attempting to copy the files.
 """
-function prepare_copy_list(spec)::Vector{Dict{Symbol, String}}
+function get_directories(
+            copy_list::Vector{Dict{Symbol, String}}
+        )::Vector{String}
+
+    unique(map(x -> dirname(get(x, :to, missing)), copy_list))
+
+end
+
+
+"""
+    prepare_copy_list(
+        spec::Dict{String, Dict{String, AbstractGBDFilename}}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format all required filenames to copy, in sets of "from-to" pairs.
+Search for the files list to copy from, and make the file list to copy to.
+"""
+function prepare_copy_list(
+            spec::Dict{String, Dict{String, AbstractGBDFilename}}
+        )::Vector{Dict{Symbol, String}}
 
     local copy_list_interventions::Vector{Dict{Symbol, String}}
     local copy_list_v20::Vector{Dict{Symbol, String}}
+    local iv_data::Vector{Dict{String, BaseGBDFilename}}
     local iv_keys::Vector{String}
     local output::Vector{Dict{Symbol, String}}
 
+    # Hardcoded set of interventions keys
     iv_keys = [
         "am",
         "irs",
         "itn",
     ]
 
-    copy_list_interventions = vcat(map(
-        x -> prepare_copy_list_intervention(get(spec, x, missing)),
-        iv_keys)...)
+    # Get interventions data as the correct type
+    iv_data = map(
+        x -> convert(Dict{String, BaseGBDFilename}, get(spec, x, missing)),
+        iv_keys)
 
-    copy_list_v20 = prepare_copy_list_v20(get(spec, "v20", missing))
+    copy_list_interventions =
+        vcat(map(prepare_copy_list_intervention, iv_data)...)
 
+    # Get the V20 copy list
+    copy_list_v20 = prepare_copy_list_v20(
+        convert(
+            Dict{String, BaseV20Filename},  # Convert to the correct type
+            get(spec, "v20", missing)))
+
+    # Flatten the copy lists together
     return vcat(copy_list_interventions, copy_list_v20)
 
 end
 
 
 """
+    prepare_copy_list_intervention(
+        spec_iv::Dict{String, BaseGBDFilename}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format required filename data for copying interventions files.
+Separated due to different handling of V20 data compared to remaining
+interventions data.
 """
-function prepare_copy_list_intervention(spec_iv)::Vector{Dict{Symbol, String}}
+function prepare_copy_list_intervention(
+            spec_iv::Dict{String, BaseGBDFilename}
+        )::Vector{Dict{Symbol, String}}
 
     local data_new::Vector{VariableGBDFilename}
     local data_old::Vector{VariableGBDFilename}
@@ -67,8 +106,16 @@ end
 
 
 """
+    prepare_copy_list_v20(
+        spec_v20::Dict{String, BaseV20Filename}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format required filename data for copying V20 files.  Separated due
+to different handling of V20 data compared to remaining interventions data.
 """
-function prepare_copy_list_v20(spec_v20)::Vector{Dict{Symbol, String}}
+function prepare_copy_list_v20(
+            spec_v20::Dict{String, BaseV20Filename}
+        )::Vector{Dict{Symbol, String}}
 
     local data_new::Vector{V20Filename}
     local data_old::Vector{V20Filename}
@@ -92,15 +139,33 @@ end
 function main()
 
     local copy_list::Vector{Dict{Symbol, String}}
+    local dirs_reqd::Vector{String}
     local spec::Dict{String, Dict{String, AbstractGBDFilename}}
 
+    println("\033[36mReading file specification\033[m")
     spec = read_spec(ARGS[1])
 
+    println("\033[36mPreparing list of files to copy\033[m")
     copy_list = prepare_copy_list(spec)
 
-    open("TESTING.json", "w") do io
-        JSON.print(io, copy_list, 4)
-    end
+    println("\033[36mGetting directory list\033[m")
+    dirs_reqd = get_directories(copy_list)
+
+    println("\033[36mMaking required directories\033[m")
+    foreach(mkpath, dirs_reqd)
+
+    println("\033[36mPreparing copy tasks\033[m")
+    task_list = map(
+        x -> Task(() -> copy_file(x[:from], x[:to])),
+        copy_list)
+
+    println("\033[36mScheduling copy tasks\033[m")
+    foreach(schedule, task_list)
+
+    println("\033[36mWaiting for copy tasks to complete\033[m")
+    foreach(wait, task_list)
+
+    println("\033[36mDone\033[m")
 
 end
 
