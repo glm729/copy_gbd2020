@@ -48,6 +48,7 @@ function prepare_copy_list(
 
     local copy_list_interventions::Vector{Dict{Symbol, String}}
     local copy_list_v20::Vector{Dict{Symbol, String}}
+    local iv_data::Vector{Dict{String, BaseGBDFilename}}
     local iv_keys::Vector{String}
     local output::Vector{Dict{Symbol, String}}
 
@@ -58,13 +59,19 @@ function prepare_copy_list(
         "itn",
     ]
 
-    # Get the interventions copy list
-    copy_list_interventions = vcat(map(
-        x -> prepare_copy_list_intervention(get(spec, x, missing)),
-        iv_keys)...)
+    # Get interventions data as the correct type
+    iv_data = map(
+        x -> convert(Dict{String, BaseGBDFilename}, get(spec, x, missing)),
+        iv_keys)
+
+    copy_list_interventions =
+        vcat(map(prepare_copy_list_intervention, iv_data)...)
 
     # Get the V20 copy list
-    copy_list_v20 = prepare_copy_list_v20(get(spec, "v20", missing))
+    copy_list_v20 = prepare_copy_list_v20(
+        convert(
+            Dict{String, BaseV20Filename},  # Convert to the correct type
+            get(spec, "v20", missing)))
 
     # Flatten the copy lists together
     return vcat(copy_list_interventions, copy_list_v20)
