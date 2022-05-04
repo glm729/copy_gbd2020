@@ -17,10 +17,11 @@ struct BaseGBDFilename{T <: AbstractString} <: AbstractGBDFilename
 
     dir::T
     date::T
+    prefix::T
     suffix::T
 
-    function BaseGBDFilename(dir::T, date::T, suffix::T) where {T}
-        new{T}(dir, date, suffix)
+    function BaseGBDFilename(dir::T, date::T, prefix::T, suffix::T) where {T}
+        new{T}(dir, date, prefix, suffix)
     end
 
 end
@@ -32,15 +33,22 @@ struct VariableGBDFilename{T <: AbstractString} <: AbstractVariableGBDFilename
 
     dir::T
     date::T
+    prefix::T
     var::T
     suffix::T
 
-    function VariableGBDFilename(dir::T, date::T, var::T, suffix::T) where {T}
-        new{T}(dir, date, var, suffix)
+    function VariableGBDFilename(
+                dir::T,
+                date::T,
+                prefix::T,
+                var::T,
+                suffix::T
+            ) where {T}
+        new{T}(dir, date, prefix, var, suffix)
     end
 
     function VariableGBDFilename(base::BaseGBDFilename, var::T) where {T}
-        new{T}(base.dir, base.date, var, base.suffix)
+        new{T}(base.dir, base.date, base.prefix, var, base.suffix)
     end
 
 end
@@ -129,7 +137,7 @@ Joins `var` and `suffix` without a separator, and joins the complete path
 separated by a single solidus.
 """
 function Base.string(x::VariableGBDFilename)::String
-    join([x.dir, x.date, string(x.var, x.suffix)], "/")
+    join([x.dir, x.date, string(x.prefix, x.var, x.suffix)], "/")
 end
 
 
