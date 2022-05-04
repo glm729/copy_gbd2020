@@ -12,6 +12,7 @@ using JSON
 # -----------------------------------------------------------------------------
 
 
+include("copy_file.jl")
 include("find_intervention.jl")
 include("find_v20.jl")
 include("read_spec.jl")
@@ -112,17 +113,30 @@ function main()
     local dirs_reqd::Vector{String}
     local spec::Dict{String, Dict{String, AbstractGBDFilename}}
 
+    println("\033[36mReading file specification\033[m")
     spec = read_spec(ARGS[1])
 
+    println("\033[36mPreparing list of files to copy\033[m")
     copy_list = prepare_copy_list(spec)
 
+    println("\033[36mGetting directory list\033[m")
     dirs_reqd = get_directories(copy_list)
 
-    # foreach(mkpath, dirs_reqd)
+    println("\033[36mMaking required directories\033[m")
+    foreach(mkpath, dirs_reqd)
 
-    open("TESTING.json", "w") do io
-        JSON.print(io, copy_list, 4)
-    end
+    println("\033[36mPreparing copy tasks\033[m")
+    task_list = map(
+        x -> Task(() -> copy_file(x[:from], x[:to])),
+        copy_list)
+
+    println("\033[36mScheduling copy tasks\033[m")
+    foreach(schedule, task_list)
+
+    println("\033[36mWaiting for copy tasks to complete\033[m")
+    foreach(wait, task_list)
+
+    println("\033[36mDone\033[m")
 
 end
 
