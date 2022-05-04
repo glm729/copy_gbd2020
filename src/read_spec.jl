@@ -40,6 +40,12 @@ end
 
 
 """
+    read_spec(
+        path::AbstractString
+    )::Dict{String, Dict{String, AbstractGBDFilename}}
+
+Read and parse the file specification JSON, and coerce data into GBD filename
+structures.
 """
 function read_spec(
             path::AbstractString
