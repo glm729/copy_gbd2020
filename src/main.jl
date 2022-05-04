@@ -1,13 +1,6 @@
 #!/usr/bin/env julia
 
 
-# Module imports
-# -----------------------------------------------------------------------------
-
-
-using JSON
-
-
 # Source inclusions
 # -----------------------------------------------------------------------------
 
@@ -42,34 +35,55 @@ end
 
 
 """
+    prepare_copy_list(
+        spec::Dict{String, Dict{String, AbstractGBDFilename}}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format all required filenames to copy, in sets of "from-to" pairs.
+Search for the files list to copy from, and make the file list to copy to.
 """
-function prepare_copy_list(spec)::Vector{Dict{Symbol, String}}
+function prepare_copy_list(
+            spec::Dict{String, Dict{String, AbstractGBDFilename}}
+        )::Vector{Dict{Symbol, String}}
 
     local copy_list_interventions::Vector{Dict{Symbol, String}}
     local copy_list_v20::Vector{Dict{Symbol, String}}
     local iv_keys::Vector{String}
     local output::Vector{Dict{Symbol, String}}
 
+    # Hardcoded set of interventions keys
     iv_keys = [
         "am",
         "irs",
         "itn",
     ]
 
+    # Get the interventions copy list
     copy_list_interventions = vcat(map(
         x -> prepare_copy_list_intervention(get(spec, x, missing)),
         iv_keys)...)
 
+    # Get the V20 copy list
     copy_list_v20 = prepare_copy_list_v20(get(spec, "v20", missing))
 
+    # Flatten the copy lists together
     return vcat(copy_list_interventions, copy_list_v20)
 
 end
 
 
 """
+    prepare_copy_list_intervention(
+        spec_iv::Dict{String, BaseGBDFilename}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format required filename data for copying interventions files.
+Separated due to different handling of V20 data compared to remaining
+interventions data.
 """
-function prepare_copy_list_intervention(spec_iv)::Vector{Dict{Symbol, String}}
+function prepare_copy_list_intervention(
+            spec_iv::Dict{String, BaseGBDFilename}
+        )::Vector{Dict{Symbol, String}}
 
     local data_new::Vector{VariableGBDFilename}
     local data_old::Vector{VariableGBDFilename}
@@ -85,8 +99,16 @@ end
 
 
 """
+    prepare_copy_list_v20(
+        spec_v20::Dict{String, BaseV20Filename}
+    )::Vector{Dict{Symbol, String}}
+
+Collect and format required filename data for copying V20 files.  Separated due
+to different handling of V20 data compared to remaining interventions data.
 """
-function prepare_copy_list_v20(spec_v20)::Vector{Dict{Symbol, String}}
+function prepare_copy_list_v20(
+            spec_v20::Dict{String, BaseV20Filename}
+        )::Vector{Dict{Symbol, String}}
 
     local data_new::Vector{V20Filename}
     local data_old::Vector{V20Filename}
