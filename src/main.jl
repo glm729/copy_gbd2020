@@ -24,6 +24,23 @@ include("types.jl")
 
 
 """
+    get_directories(
+        copy_list::Vector{Dict{Symbol, String}}
+    )::Vector{String}
+
+Get all directories for files to copy, to create all required directories prior
+to attempting to copy the files.
+"""
+function get_directories(
+            copy_list::Vector{Dict{Symbol, String}}
+        )::Vector{String}
+
+    unique(map(x -> dirname(get(x, :to, missing)), copy_list))
+
+end
+
+
+"""
 """
 function prepare_copy_list(spec)::Vector{Dict{Symbol, String}}
 
@@ -92,11 +109,16 @@ end
 function main()
 
     local copy_list::Vector{Dict{Symbol, String}}
+    local dirs_reqd::Vector{String}
     local spec::Dict{String, Dict{String, AbstractGBDFilename}}
 
     spec = read_spec(ARGS[1])
 
     copy_list = prepare_copy_list(spec)
+
+    dirs_reqd = get_directories(copy_list)
+
+    # foreach(mkpath, dirs_reqd)
 
     open("TESTING.json", "w") do io
         JSON.print(io, copy_list, 4)
