@@ -133,8 +133,14 @@ end
 # Main function
 # -----------------------------------------------------------------------------
 
-
 """
+Given a data specification, run a multi-threaded copy operation.
+
+This is multi-threaded as the remote machine uses a distributed storage drive
+with PID-based or host-based access limitations.  This means that it is
+possible to have multiple different physical drive accessors at the same moment
+as the network drive is split across multiple physical drive, but only if there
+are multiple different processes.
 """
 function main()
 
