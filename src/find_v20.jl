@@ -65,12 +65,15 @@ Find all V20 filenames matching the given `BaseV20Filename` template.
 function find_v20(template::BaseV20Filename)::Vector{V20Filename}
 
     local prefix::String
-    local directory::String
+    local directory::Vector{String}
     local indices::Vector{String}
+    local subdir_pattern::Regex
     local v20_rex::Regex
 
     prefix =
         join(map(x -> getproperty(template, x), [:dir, :date, :subdir]), "/")
+
+    subdir_pattern = Regex(string(regex_escape(template.subdir), "\\d+\$"))
 
     v20_rex = Regex(string(
         "^",
@@ -79,11 +82,11 @@ function find_v20(template::BaseV20Filename)::Vector{V20Filename}
         regex_escape(template.suffix),
         "\$"))
 
-    directory = dirname(prefix)
+    directory = filter(
+        x -> occursin(subdir_pattern, x),
+        readdir(dirname(prefix); join=false))
 
-    indices = map(
-        x -> replace(x, template.subdir => ""),
-        readdir(directory; join=false))
+    indices = map(x -> replace(x, template.subdir => ""), directory)
 
     return vcat(map(x -> find_files_v20(x, template, v20_rex), indices)...)
 
