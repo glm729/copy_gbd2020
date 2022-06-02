@@ -1,2 +1,3 @@
-# Data directory
+# Directories for data and temporary files
 .data/
+.tmp/
