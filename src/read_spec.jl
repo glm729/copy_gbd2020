@@ -12,6 +12,11 @@ include("types.jl")
 
 
 """
+    get_spec_data_base_sub(data::Dict{String, String}, T::Type)::T
+
+Abstracted map operations to coerce a set of target data into a certain GBD
+filename type.  This was abstracted as the nested mapping was getting a bit
+complex to handle.
 """
 function get_spec_data_base_sub(data::Dict{String, String}, T::Type)
 
@@ -24,6 +29,14 @@ end
 
 
 """
+    get_spec_data_base(
+        data::Dict{String, Dict{String, String}},
+        T::Type
+    )::Dict{String, Vector{T}}
+
+Abstracted operations to read specification data from the parsed specification
+JSON.  Target keys are hardcoded according to expectations regarding the
+possible types.
 """
 function get_spec_data_base(data::Dict{String, Dict{String, String}}, T::Type)
 
@@ -96,8 +109,6 @@ end
 # -----------------------------------------------------------------------------
 
 
-"""
-"""
 function main()
 
     println(ARGS)
